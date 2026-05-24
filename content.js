@@ -509,11 +509,25 @@ function showOverlay(domain) {
     submitIntent('Just browsing');
   });
 
-  backdrop.querySelector('.intention-input').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      submitIntent(e.target.value);
-    }
+  const intentionInput = backdrop.querySelector('.intention-input');
+
+  // Stop ALL keyboard events from bubbling out of the input to the host page.
+  // Sites like Twitter, YouTube and Instagram intercept keydown/keyup/keypress
+  // globally and swallow keys (space, arrows, letters) before they reach
+  // any input field they don't own — this prevents that entirely.
+  ['keydown', 'keyup', 'keypress'].forEach(eventType => {
+    intentionInput.addEventListener(eventType, (e) => {
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      if (e.key === 'Enter') {
+        submitIntent(intentionInput.value);
+      }
+    });
   });
+
+  // Also stop the input's focus/click events from propagating
+  intentionInput.addEventListener('click', (e) => e.stopPropagation());
+  intentionInput.addEventListener('focus', (e) => e.stopPropagation());
 }
 
 function showWidget(session) {
