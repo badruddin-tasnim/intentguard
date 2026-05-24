@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — IntentGuard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0d;
+      --surface: #141414;
+      --border: #222;
+      --text: #e8e8e8;
+      --muted: #888;
+      --subtle: #444;
+      --accent: #10b981;
+      --accent-dim: rgba(16,185,129,0.12);
+      --red: #ef4444;
+      --red-dim: rgba(239,68,68,0.1);
+      --navy: #0E172A;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* HEADER */
+    header {
+      background: var(--navy);
+      border-bottom: 1px solid #1a2a45;
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo-mark {
+      width: 32px; height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+
+    .logo-name {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-sep {
+      width: 1px; height: 20px;
+      background: #2a3a55;
+      margin: 0 12px;
+    }
+
+    .logo-doc {
+      font-size: 13px;
+      color: #6a7a95;
+      font-weight: 500;
+    }
+
+    /* LAYOUT */
+    .page {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 60px 40px 100px;
+    }
+
+    /* HERO */
+    .hero {
+      margin-bottom: 56px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(16,185,129,0.2);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 99px;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-size: 38px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+
+    .hero p {
+      font-size: 16px;
+      color: var(--muted);
+      max-width: 560px;
+      line-height: 1.7;
+    }
+
+    .meta-row {
+      display: flex;
+      gap: 24px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .meta-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .meta-value {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    /* QUICK SUMMARY BOX */
+    .summary-box {
+      background: var(--accent-dim);
+      border: 1px solid rgba(16,185,129,0.2);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 56px;
+    }
+
+    .summary-box h2 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .summary-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .summary-icon {
+      font-size: 14px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .summary-text {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    /* NEVER BOX */
+    .never-box {
+      background: var(--red-dim);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 56px;
+    }
+
+    .never-box h2 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+    }
+
+    .never-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .never-list li {
+      display: flex;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .never-list li::before {
+      content: '✕';
+      color: var(--red);
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* SECTIONS */
+    section {
+      margin-bottom: 52px;
+    }
+
+    .section-number {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-family: 'DM Mono', monospace;
+      margin-bottom: 8px;
+    }
+
+    section h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    section p {
+      color: var(--muted);
+      margin-bottom: 14px;
+      font-size: 15px;
+    }
+
+    section p:last-child { margin-bottom: 0; }
+
+    /* DATA TABLE */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .data-table th {
+      background: #1a1a1a;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .data-table td {
+      padding: 13px 16px;
+      font-size: 13px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      line-height: 1.55;
+    }
+
+    .data-table tr:last-child td { border-bottom: none; }
+
+    .data-table td:first-child {
+      color: var(--text);
+      font-weight: 500;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #1e1e1e;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .tag.green {
+      background: var(--accent-dim);
+      border-color: rgba(16,185,129,0.2);
+      color: var(--accent);
+    }
+
+    /* PERMISSION TABLE */
+    .perm-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .perm-table th {
+      background: #1a1a1a;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .perm-table td {
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      line-height: 1.55;
+    }
+
+    .perm-table tr:last-child td { border-bottom: none; }
+
+    .perm-name {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    /* CALLOUT */
+    .callout {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 16px 20px;
+      margin: 20px 0;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* CONTACT */
+    .contact-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+    }
+
+    .contact-box h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .contact-box p {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 40px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--subtle);
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 16px 20px; }
+      .page { padding: 40px 20px 80px; }
+      .hero h1 { font-size: 28px; }
+      .summary-grid { grid-template-columns: 1fr; }
+      .data-table, .perm-table { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">🎯</div>
+  <span class="logo-name">IntentGuard</span>
+  <div class="logo-sep"></div>
+  <span class="logo-doc">Privacy Policy</span>
+</header>
+
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">📄 Legal Document</div>
+    <h1>Privacy Policy</h1>
+    <p>This policy explains exactly what data IntentGuard collects, how it is stored, and what it is used for. We believe in complete transparency — especially because this extension operates on websites you visit.</p>
+    <div class="meta-row">
+      <div class="meta-item">
+        <span class="meta-label">Extension</span>
+        <span class="meta-value">IntentGuard</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Version</span>
+        <span class="meta-value">1.1.0</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Effective Date</span>
+        <span class="meta-value">May 24, 2025</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Last Updated</span>
+        <span class="meta-value">May 24, 2025</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Platform</span>
+        <span class="meta-value">Google Chrome (Manifest V3)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK SUMMARY -->
+  <div class="summary-box">
+    <h2>✦ The Short Version</h2>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <span class="summary-icon">🔒</span>
+        <span class="summary-text">All data stays on your device. Nothing is sent to any server.</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-icon">👤</span>
+        <span class="summary-text">We do not collect your name, email, or any personal identity.</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-icon">🌐</span>
+        <span class="summary-text">We do not read, access, or store the content of any webpage you visit.</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-icon">📊</span>
+        <span class="summary-text">No analytics, no tracking, no third-party data sharing — ever.</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-icon">🗑️</span>
+        <span class="summary-text">You can clear all stored data at any time from within the extension.</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-icon">🚫</span>
+        <span class="summary-text">We do not sell, rent, or monetize any data in any form.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEVER DO -->
+  <div class="never-box">
+    <h2>✕ What We Will Never Do</h2>
+    <ul class="never-list">
+      <li>Transmit any data to external servers, APIs, or third parties</li>
+      <li>Read, parse, or store the content, text, or media of any webpage you visit</li>
+      <li>Collect, store, or infer any personally identifiable information (PII)</li>
+      <li>Use your browsing data for advertising, profiling, or targeting</li>
+      <li>Share any information with advertisers, data brokers, or any other company</li>
+      <li>Access your passwords, form inputs, cookies, or authentication tokens</li>
+      <li>Track your browsing activity outside of the specific domains you have configured in settings</li>
+      <li>Make any network requests except loading favicons from Google's public favicon API</li>
+    </ul>
+  </div>
+
+  <!-- SECTION 1 -->
+  <section>
+    <div class="section-number">01</div>
+    <h2>Who We Are</h2>
+    <p>IntentGuard is a Chrome browser extension built to help users stay intentional when visiting social media websites. Before entering a monitored site, the extension prompts you to define your purpose. A small widget reminds you of that intention throughout your session.</p>
+    <p>IntentGuard is an independent extension and is not affiliated with, endorsed by, or connected to Google LLC, Meta, X Corp, TikTok, YouTube, Reddit, LinkedIn, or any other social media platform.</p>
+  </section>
+
+  <!-- SECTION 2 -->
+  <section>
+    <div class="section-number">02</div>
+    <h2>What Data We Collect and Store</h2>
+    <p>IntentGuard stores a minimal set of data exclusively in your browser's local storage (<span class="tag">chrome.storage.local</span>). This storage is sandboxed to your device and your Chrome profile. It is never synced to Google's servers and never transmitted anywhere.</p>
+    <p>The following table lists every data field the extension stores:</p>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Storage Key</th>
+          <th>What It Contains</th>
+          <th>Why It's Stored</th>
+          <th>Retention</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>monitoredDomains</td>
+          <td>A list of website domains you have chosen to monitor (e.g. <span class="tag">instagram.com</span>). Defaults to a preset list of common social media sites.</td>
+          <td>To know which websites should trigger the intention prompt.</td>
+          <td>Persists until you remove a domain in Settings or uninstall the extension.</td>
+        </tr>
+        <tr>
+          <td>activeSessions</td>
+          <td>Per-tab session data: the domain name, the intention text you typed, and the session start timestamp.</td>
+          <td>To display the floating reminder widget and track elapsed time during an active session.</td>
+          <td>Deleted automatically when the session ends (tab closed, site navigated away from, or you click Mark Done).</td>
+        </tr>
+        <tr>
+          <td>history</td>
+          <td>Completed session records: domain name, intention text, start time, end time, and duration in seconds.</td>
+          <td>To display your 7-day session history in the extension popup.</td>
+          <td>Auto-purged after 7 days or when the 100-entry limit is reached (oldest entries removed first). You can clear all history manually at any time.</td>
+        </tr>
+        <tr>
+          <td>glowEnabled</td>
+          <td>A boolean (<span class="tag">true</span> or <span class="tag">false</span>) indicating whether the alert glow feature is active.</td>
+          <td>To remember your alert glow preference across browser sessions.</td>
+          <td>Persists until changed in Settings or extension is uninstalled.</td>
+        </tr>
+        <tr>
+          <td>glowMinutes</td>
+          <td>A number (5, 10, or 15) representing your chosen alert glow interval in minutes.</td>
+          <td>To remember your alert glow timing preference.</td>
+          <td>Persists until changed in Settings or extension is uninstalled.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong style="color:#e8e8e8;">Important:</strong> The "intention" text you type is your own free-form input. IntentGuard stores it exactly as entered, locally, only for the purpose of displaying it back to you. It is never read, analyzed, or transmitted by the extension.
+    </div>
+  </section>
+
+  <!-- SECTION 3 -->
+  <section>
+    <div class="section-number">03</div>
+    <h2>Data We Do Not Collect</h2>
+    <p>To be explicit, IntentGuard does <strong style="color:#fff;">not</strong> collect or have access to any of the following:</p>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Data Type</th>
+          <th>Collected?</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Page content / DOM</td>
+          <td><span class="tag">No</span></td>
+          <td>The content script injects UI only. It does not read, parse, or transmit any page content.</td>
+        </tr>
+        <tr>
+          <td>Full URLs / URL paths</td>
+          <td><span class="tag">No</span></td>
+          <td>Only the base domain (e.g. instagram.com) is extracted and used. Full URLs are discarded immediately.</td>
+        </tr>
+        <tr>
+          <td>Keystrokes / form inputs</td>
+          <td><span class="tag">No</span></td>
+          <td>Only the intention text you type into IntentGuard's own input field is stored. No other keystrokes are monitored.</td>
+        </tr>
+        <tr>
+          <td>Cookies / authentication</td>
+          <td><span class="tag">No</span></td>
+          <td>The extension does not request or access cookie data.</td>
+        </tr>
+        <tr>
+          <td>Personal identity (name, email, IP)</td>
+          <td><span class="tag">No</span></td>
+          <td>No account is required. No identity data is requested or stored.</td>
+        </tr>
+        <tr>
+          <td>Device information</td>
+          <td><span class="tag">No</span></td>
+          <td>No hardware identifiers, OS version, or browser fingerprint data is collected.</td>
+        </tr>
+        <tr>
+          <td>Usage analytics / telemetry</td>
+          <td><span class="tag">No</span></td>
+          <td>There is no analytics SDK, crash reporter, or telemetry of any kind in this extension.</td>
+        </tr>
+        <tr>
+          <td>Cross-site browsing history</td>
+          <td><span class="tag">No</span></td>
+          <td>The extension is only active on domains you have explicitly configured. All other sites are ignored entirely.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SECTION 4 -->
+  <section>
+    <div class="section-number">04</div>
+    <h2>Permissions Explained</h2>
+    <p>IntentGuard requests the following Chrome permissions. Each permission is used only for its stated purpose:</p>
+
+    <table class="perm-table">
+      <thead>
+        <tr>
+          <th>Permission</th>
+          <th>Why It Is Required</th>
+          <th>What It Does NOT Allow</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="perm-name">storage</span></td>
+          <td>Reads and writes session data, history, domain list, and settings to <span class="tag">chrome.storage.local</span> on your device.</td>
+          <td>Does not allow access to any other extension's storage or any remote storage.</td>
+        </tr>
+        <tr>
+          <td><span class="perm-name">tabs</span></td>
+          <td>Reads the URL of the active tab to determine if it matches a monitored domain. Sends messages between the background service worker and content scripts within the same tab.</td>
+          <td>Does not allow reading tab content, browsing history, or tab data from other Chrome profiles.</td>
+        </tr>
+        <tr>
+          <td><span class="perm-name">webNavigation</span></td>
+          <td>Detects when you navigate away from a monitored site so the active session can be automatically completed and saved to history.</td>
+          <td>Does not allow blocking, modifying, or redirecting any web requests.</td>
+        </tr>
+        <tr>
+          <td><span class="perm-name">host_permissions: *://*/*</span></td>
+          <td>Required because users can add any custom domain to their monitored list in Settings. The extension cannot know at install time which domains a user will add, so broad host access is necessary to inject the intention prompt UI on user-specified sites.</td>
+          <td>Does not allow reading page content, intercepting network traffic, or modifying requests on any site. The content script only injects a UI overlay and only activates when the current domain matches a domain in the user's configured list.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong style="color:#e8e8e8;">Regarding broad host permissions:</strong> The <span class="tag">*://*/*</span> permission is the minimum required to support user-defined custom domains. The extension's content script contains explicit logic to immediately exit and do nothing on any domain that is not in the user's configured list. No action is taken on sites that are not monitored.
+    </div>
+  </section>
+
+  <!-- SECTION 5 -->
+  <section>
+    <div class="section-number">05</div>
+    <h2>Network Requests</h2>
+    <p>IntentGuard makes exactly one type of outbound network request: loading website favicons to display recognizable icons in the popup and overlay UI. This is done using Google's public favicon service:</p>
+    <div class="callout" style="font-family:'DM Mono',monospace;font-size:12px;">
+      https://www.google.com/s2/favicons?sz=64&domain=[domain]
+    </div>
+    <p>This request sends only the domain name (e.g. <span class="tag">instagram.com</span>) to Google's servers to retrieve a small icon image. No personal data, session data, or user-generated content is included in this request. This is the same favicon loading mechanism used by most browsers and bookmark managers.</p>
+    <p>No other network requests of any kind are made by IntentGuard. There are no remote APIs, no analytics endpoints, no cloud sync, and no external servers operated by IntentGuard.</p>
+  </section>
+
+  <!-- SECTION 6 -->
+  <section>
+    <div class="section-number">06</div>
+    <h2>Data Storage and Security</h2>
+    <p>All data stored by IntentGuard uses Chrome's <span class="tag">chrome.storage.local</span> API. This means:</p>
+    <p><strong style="color:#fff;">Local only.</strong> Data is stored in your browser's local profile directory on your computer. It is not uploaded to Google's sync servers, even if you have Chrome Sync enabled for other extensions.</p>
+    <p><strong style="color:#fff;">Profile-isolated.</strong> Data stored by IntentGuard is only accessible to the IntentGuard extension within your specific Chrome profile. Other extensions, websites, and applications cannot access it.</p>
+    <p><strong style="color:#fff;">No encryption applied by us.</strong> The data is stored as plaintext JSON by Chrome's storage API. The security of this data depends on the security of your device and your Chrome profile. We recommend standard device security practices (screen lock, disk encryption) if you consider your intention notes sensitive.</p>
+    <p><strong style="color:#fff;">Automatic deletion.</strong> History entries older than 7 days are automatically deleted when a new session completes. The maximum history size is 100 entries. Active session data is deleted immediately when a session ends.</p>
+  </section>
+
+  <!-- SECTION 7 -->
+  <section>
+    <div class="section-number">07</div>
+    <h2>Your Rights and Controls</h2>
+    <p>Because all data is stored locally on your device, you have complete control at all times:</p>
+    <p><strong style="color:#fff;">Clear history.</strong> Open the IntentGuard popup, go to the History tab, and click "Clear history" to delete all session history immediately.</p>
+    <p><strong style="color:#fff;">Manage monitored sites.</strong> Open Settings in the popup to add or remove any domain from your monitored list at any time.</p>
+    <p><strong style="color:#fff;">Disable the extension.</strong> You can disable IntentGuard at any time from <span class="tag">chrome://extensions</span> without losing your stored data.</p>
+    <p><strong style="color:#fff;">Delete all data.</strong> Uninstalling the extension from <span class="tag">chrome://extensions</span> permanently deletes all data stored by IntentGuard from your device. This action is irreversible.</p>
+    <p><strong style="color:#fff;">Manual deletion.</strong> Advanced users can also clear IntentGuard's storage directly from Chrome DevTools by navigating to Application → Storage → Local Storage.</p>
+  </section>
+
+  <!-- SECTION 8 -->
+  <section>
+    <div class="section-number">08</div>
+    <h2>Children's Privacy</h2>
+    <p>IntentGuard does not knowingly collect any information from anyone, including children under the age of 13 (or the applicable age of digital consent in your jurisdiction). Since the extension collects no personal information whatsoever and stores data only locally on the user's device, it does not present privacy risks specific to minors beyond those inherent to browser usage generally.</p>
+    <p>IntentGuard is not directed at children and is designed as a productivity tool for general audiences.</p>
+  </section>
+
+  <!-- SECTION 9 -->
+  <section>
+    <div class="section-number">09</div>
+    <h2>Third-Party Services</h2>
+    <p>IntentGuard does not integrate with, depend on, or send data to any third-party services, SDKs, or APIs — with the single exception noted in Section 5 (Google's public favicon service, which receives only a domain name for icon loading purposes).</p>
+    <p>There are no advertising networks, analytics providers, crash reporting services, A/B testing platforms, or any other third-party code embedded in IntentGuard.</p>
+  </section>
+
+  <!-- SECTION 10 -->
+  <section>
+    <div class="section-number">10</div>
+    <h2>Changes to This Policy</h2>
+    <p>If this privacy policy is updated in a future version of IntentGuard, the "Last Updated" date at the top of this document will reflect the change. For significant changes that affect how data is handled, we will update the version notes in the Chrome Web Store listing.</p>
+    <p>Continued use of IntentGuard after a policy update constitutes acceptance of the updated policy. We commit to never introducing data collection practices that contradict the core principles stated in this document — specifically, that all data remains local and is never transmitted to any server.</p>
+  </section>
+
+  <!-- SECTION 11 -->
+  <section>
+    <div class="section-number">11</div>
+    <h2>Open Source and Verifiability</h2>
+    <p>We encourage users to inspect the extension's source code to verify the claims made in this privacy policy. The extension can be examined at any time by loading it as an unpacked extension in Chrome Developer Mode and reviewing the source files: <span class="tag">background.js</span>, <span class="tag">content.js</span>, <span class="tag">popup.js</span>, and <span class="tag">manifest.json</span>.</p>
+    <p>Key verifiable facts from the source code: there are no <span class="tag">fetch()</span> or <span class="tag">XMLHttpRequest</span> calls except for favicon loading; all storage operations use <span class="tag">chrome.storage.local</span>; the content script contains an early-exit check that prevents any action on non-monitored domains.</p>
+  </section>
+
+  <!-- CONTACT -->
+  <section>
+    <div class="section-number">12</div>
+    <h2>Contact</h2>
+    <div class="contact-box">
+      <h3>Questions about this policy?</h3>
+      <p>If you have any questions, concerns, or requests regarding this privacy policy or IntentGuard's data practices, please reach out via the Chrome Web Store support tab on the IntentGuard extension listing.</p>
+      <p>We aim to respond to all privacy-related inquiries within 5 business days.</p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  © 2025 IntentGuard. All rights reserved. &nbsp;·&nbsp; This policy applies to IntentGuard v1.1.0 and later.
+</footer>
+
+</body>
+</html>
