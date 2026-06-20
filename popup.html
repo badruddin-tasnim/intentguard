@@ -48,6 +48,44 @@
       color: #fff;
     }
 
+    /* SUPPORT BUTTON */
+    .support-btn {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      color: #888;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 11px;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 5px;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .support-btn:hover { background: rgba(255,255,255,0.1); color: #ccc; }
+
+    .support-toast {
+      position: fixed;
+      bottom: 16px; left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: #1a2a1a;
+      border: 1px solid rgba(16,185,129,0.3);
+      color: #10b981;
+      font-size: 11px; font-weight: 600;
+      padding: 7px 16px; border-radius: 8px;
+      opacity: 0;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      pointer-events: none;
+      text-align: center;
+      line-height: 1.6;
+      z-index: 999;
+    }
+    .support-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
     /* TABS */
     .tabs {
       display: flex;
@@ -242,9 +280,21 @@
       padding: 13px 16px;
       background: #212121; border: 1px solid #2a2a2a; border-radius: 12px;
       margin-bottom: 8px;
+      gap: 12px;
     }
     .setting-label { font-size: 13px; font-weight: 600; color: #e0e0e0; }
-    .setting-sub { font-size: 11px; color: #666; margin-top: 2px; }
+    .setting-sub { font-size: 11px; color: #666; margin-top: 2px; line-height: 1.4; }
+
+    /* Rows with multiple pills (4+) stack vertically — text on top, pills below */
+    .setting-row.setting-row-stack {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+    .setting-row-stack .pill-group {
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
 
     /* Toggle switch */
     .toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
@@ -290,7 +340,14 @@
       <img src="logo.svg" alt="IntentGuard" style="width:22px;height:22px;object-fit:contain;flex-shrink:0;">
       IntentGuard
     </div>
+    <button class="support-btn" id="support-btn">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
+      </svg>
+      Support
+    </button>
   </div>
+  <div class="support-toast" id="support-toast">✓ Email copied to clipboard</div>
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="sessions">Sessions</button>
@@ -321,7 +378,7 @@
       <div class="setting-row">
         <div>
           <div class="setting-label">Enable alert glow</div>
-          <div class="setting-sub">Red glow flashes around the widget as a reminder</div>
+          <div class="setting-sub">Red glow flashes around the screen as a reminder</div>
         </div>
         <label class="toggle">
           <input type="checkbox" id="glow-toggle" checked>
@@ -330,16 +387,29 @@
         </label>
       </div>
 
-      <div class="setting-row" id="glow-time-row">
+      <div class="setting-row setting-row-stack" id="glow-time-row">
         <div>
           <div class="setting-label">Glow after</div>
           <div class="setting-sub">Repeats every interval while session is active</div>
         </div>
         <div class="pill-group">
+          <button class="pill" data-mins="2">2m</button>
           <button class="pill" data-mins="5">5m</button>
           <button class="pill active" data-mins="10">10m</button>
           <button class="pill" data-mins="15">15m</button>
         </div>
+      </div>
+
+      <div class="setting-row" id="sound-row">
+        <div>
+          <div class="setting-label">Alert sound</div>
+          <div class="setting-sub">Plays a subtle beep alongside the glow alert</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="sound-toggle" checked>
+          <div class="toggle-track"></div>
+          <div class="toggle-thumb"></div>
+        </label>
       </div>
 
     </div>

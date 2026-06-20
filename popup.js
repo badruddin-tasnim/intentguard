@@ -136,7 +136,9 @@ function renderHistory(history) {
 
 // ── SETTINGS ─────────────────────────────────────────────
 function renderSettings() {
-  chrome.runtime.sendMessage({ type: 'GET_DOMAINS' }, ({ domains }) => {
+  chrome.runtime.sendMessage({ type: 'GET_DOMAINS' }, (response) => {
+    if (!response || !response.domains) return;
+    const { domains } = response;
     const list = document.getElementById('domain-list');
     list.innerHTML = '';
 
@@ -203,7 +205,9 @@ function addDomain() {
     return;
   }
 
-  chrome.runtime.sendMessage({ type: 'GET_DOMAINS' }, ({ domains }) => {
+  chrome.runtime.sendMessage({ type: 'GET_DOMAINS' }, (response) => {
+    if (!response || !response.domains) return;
+    const { domains } = response;
     if (domains.includes(val)) {
       showSaveToast();
       document.getElementById('add-input').value = '';
@@ -229,16 +233,23 @@ function renderPopup() {
 
 // ── ALERT GLOW SETTINGS ──────────────────────────────────
 function loadGlowSettings() {
-  chrome.storage.local.get(['glowEnabled', 'glowMinutes'], data => {
-    const enabled = data.glowEnabled !== false; // default true
-    const mins = data.glowMinutes || 10;         // default 10
+  chrome.storage.local.get(['glowEnabled', 'glowMinutes', 'soundEnabled'], data => {
+    const enabled = data.glowEnabled !== false;       // default true
+    const mins = data.glowMinutes || 10;               // default 10
+    const soundEnabled = data.soundEnabled !== false;  // default true
 
     const toggle = document.getElementById('glow-toggle');
     const timeRow = document.getElementById('glow-time-row');
+    const soundRow = document.getElementById('sound-row');
+    const soundToggle = document.getElementById('sound-toggle');
     if (!toggle) return;
 
     toggle.checked = enabled;
     timeRow.classList.toggle('setting-disabled', !enabled);
+    // Sound row is disabled visually whenever glow itself is off —
+    // sound is meaningless without the glow it's paired with
+    if (soundRow) soundRow.classList.toggle('setting-disabled', !enabled);
+    if (soundToggle) soundToggle.checked = soundEnabled;
 
     document.querySelectorAll('.pill').forEach(pill => {
       pill.classList.toggle('active', parseInt(pill.dataset.mins) === mins);
@@ -249,17 +260,22 @@ function loadGlowSettings() {
 function saveGlowSettings() {
   const toggle = document.getElementById('glow-toggle');
   const activePill = document.querySelector('.pill.active');
+  const soundToggle = document.getElementById('sound-toggle');
   const enabled = toggle.checked;
   const mins = activePill ? parseInt(activePill.dataset.mins) : 10;
-  chrome.storage.local.set({ glowEnabled: enabled, glowMinutes: mins });
+  const soundEnabled = soundToggle ? soundToggle.checked : true;
+  chrome.storage.local.set({ glowEnabled: enabled, glowMinutes: mins, soundEnabled });
   showSaveToast();
 }
 
 document.getElementById('glow-toggle').addEventListener('change', () => {
   const enabled = document.getElementById('glow-toggle').checked;
   document.getElementById('glow-time-row').classList.toggle('setting-disabled', !enabled);
+  document.getElementById('sound-row').classList.toggle('setting-disabled', !enabled);
   saveGlowSettings();
 });
+
+document.getElementById('sound-toggle').addEventListener('change', saveGlowSettings);
 
 document.querySelectorAll('.pill').forEach(pill => {
   pill.addEventListener('click', () => {
@@ -274,6 +290,21 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   if (btn.dataset.tab === 'settings') {
     btn.addEventListener('click', loadGlowSettings);
   }
+});
+
+// ── SUPPORT BUTTON ───────────────────────────────────────
+const SUPPORT_EMAIL = 'support@intentguard.com'; // replace with your real email
+
+document.getElementById('support-btn').addEventListener('click', () => {
+  navigator.clipboard.writeText(SUPPORT_EMAIL).then(() => {
+    const toast = document.getElementById('support-toast');
+    toast.textContent = 'Support mail copied to clipboard. Kindly mail us!';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }).catch(() => {
+    // Fallback: open mail client directly
+    window.open(`mailto:${SUPPORT_EMAIL}?subject=IntentGuard Support`);
+  });
 });
 
 renderPopup();

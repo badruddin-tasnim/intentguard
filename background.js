@@ -1,9 +1,16 @@
+// Default domains seeded on first install
 const DEFAULT_DOMAINS = [
-  'facebook.com', 'instagram.com', 'twitter.com', 'x.com',
-  'tiktok.com', 'youtube.com', 'reddit.com', 'linkedin.com',
-  'snapchat.com', 'pinterest.com', 'threads.net'
+  'facebook.com', 'instagram.com', 'twitter.com', 'x.com', 'reddit.com', 'linkedin.com'
 ];
 
+// Seed default domains on fresh install
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === 'install') {
+    chrome.storage.local.set({ monitoredDomains: DEFAULT_DOMAINS });
+  }
+});
+
+// Helper to clean and extract base domain
 function getHostname(urlString) {
   try {
     const url = new URL(urlString);
@@ -13,13 +20,13 @@ function getHostname(urlString) {
   } catch (e) { return ''; }
 }
 
+// Read monitored domains from storage, seed defaults on first run
 async function getMonitoredDomains() {
   return new Promise((resolve) => {
     chrome.storage.local.get(['monitoredDomains'], (result) => {
       if (result.monitoredDomains && result.monitoredDomains.length > 0) {
         resolve(result.monitoredDomains);
       } else {
-        // First run — seed with defaults and save
         chrome.storage.local.set({ monitoredDomains: DEFAULT_DOMAINS });
         resolve(DEFAULT_DOMAINS);
       }
@@ -27,6 +34,7 @@ async function getMonitoredDomains() {
   });
 }
 
+// Find if hostname matches any user-configured monitored domain
 async function getSocialDomain(hostname) {
   const domains = await getMonitoredDomains();
   for (const domain of domains) {
@@ -35,6 +43,7 @@ async function getSocialDomain(hostname) {
   return null;
 }
 
+// Read relevant state fields from extension local storage
 async function getStorageData() {
   return new Promise((resolve) => {
     chrome.storage.local.get(['activeSessions', 'history'], (result) => {
@@ -46,56 +55,100 @@ async function getStorageData() {
   });
 }
 
+// Set storage safely
 async function setStorageData(data) {
-  return new Promise((resolve) => { chrome.storage.local.set(data, resolve); });
+  return new Promise((resolve) => {
+    chrome.storage.local.set(data, resolve);
+  });
 }
 
+// Clean up or complete active sessions for a specific tab ID
 async function completeSession(tabId, data) {
   const session = data.activeSessions[tabId];
   if (!session) return;
+
   const endTime = Date.now();
-  const duration = Math.round((endTime - session.startTime) / 1000);
+  const duration = Math.round((endTime - session.startTime) / 1000); // in seconds
+
+  // Store if navigation was at least a couple of seconds to maintain clean analytics logs
   if (duration >= 2) {
-    const historyItem = { domain: session.domain, intention: session.intention, startTime: session.startTime, endTime, duration };
+    const historyItem = {
+      domain: session.domain,
+      intention: session.intention,
+      startTime: session.startTime,
+      endTime: endTime,
+      duration: duration
+    };
     data.history.push(historyItem);
-    // Keep today + last 7 days, max 100 entries
+
+    // Keep today's entries (no cap) + last 7 days (max 50 older entries)
     const startOfToday = new Date(); startOfToday.setHours(0,0,0,0);
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    data.history = data.history.filter(item =>
-      item.startTime >= startOfToday.getTime() || item.startTime >= sevenDaysAgo
-    );
-    if (data.history.length > 100) {
-      data.history = data.history.slice(-100);
-    }
+
+    const todayItems = data.history.filter(i => i.startTime >= startOfToday.getTime());
+    const olderItems = data.history
+      .filter(i => i.startTime >= sevenDaysAgo && i.startTime < startOfToday.getTime())
+      .slice(-50); // keep only the most recent 50 from previous 7 days
+
+    data.history = [...olderItems, ...todayItems];
   }
+
   delete data.activeSessions[tabId];
   await setStorageData(data);
 }
 
+// Monitor tab URLs to finalize sessions if the user navigates away from the social media site
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (changeInfo.url) {
-    const hostname = getHostname(changeInfo.url);
-    const socialDomain = await getSocialDomain(hostname);
-    const data = await getStorageData();
-    const activeSession = data.activeSessions[tabId];
-    if (activeSession) {
-      if (!socialDomain || socialDomain !== activeSession.domain) {
-        await completeSession(tabId, data);
-      }
-    }
+  // Only act on navigation events
+  if (changeInfo.status !== 'loading' && !changeInfo.url) return;
+
+  const data = await getStorageData();
+  const activeSession = data.activeSessions[tabId];
+  if (!activeSession) return; // no active session for this tab — nothing to do
+
+  // Try to get URL from changeInfo first, then tab object, then query directly.
+  // chrome://newtab and other internal pages won't appear in changeInfo.url
+  // but chrome.tabs.get can still return the real url via host_permissions.
+  let url = changeInfo.url || (tab && tab.url) || '';
+
+  if (!url) {
+    // Fallback: query the tab directly to get current URL
+    try {
+      const tabInfo = await chrome.tabs.get(tabId);
+      url = tabInfo.url || '';
+    } catch (e) { url = ''; }
+  }
+
+  // Any non-http URL (chrome://, about:, empty) means user left the web entirely
+  const isInternalPage = !url ||
+    !url.startsWith('http://') && !url.startsWith('https://');
+
+  const hostname = getHostname(url);
+  const socialDomain = isInternalPage ? null : await getSocialDomain(hostname);
+
+  if (!socialDomain || socialDomain !== activeSession.domain) {
+    const duration = Math.round((Date.now() - activeSession.startTime) / 1000);
+    await completeSession(tabId, data);
+    chrome.tabs.sendMessage(tabId, {
+      type: 'SESSION_COMPLETED_EXTERNALLY', duration
+    }).catch(() => {});
   }
 });
 
+// Clean up if the tab itself is removed/closed
 chrome.tabs.onRemoved.addListener(async (tabId) => {
   const data = await getStorageData();
-  if (data.activeSessions[tabId]) await completeSession(tabId, data);
+  if (data.activeSessions[tabId]) {
+    await completeSession(tabId, data);
+  }
 });
 
+// Message listener processing tasks from Content Script and Popup Script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   const tabId = sender.tab ? sender.tab.id : null;
 
   if (message.type === 'CHECK_SESSION') {
-    if (!tabId) { sendResponse({ active: false }); return; }
+    if (!tabId) { sendResponse({ active: false }); return true; }
     (async () => {
       const data = await getStorageData();
       const session = data.activeSessions[tabId];
@@ -110,7 +163,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === 'START_SESSION') {
-    if (!tabId) { sendResponse({ success: false }); return; }
+    if (!tabId) { sendResponse({ success: false }); return true; }
     (async () => {
       const data = await getStorageData();
       const currentDomain = await getSocialDomain(getHostname(sender.tab.url));
@@ -127,18 +180,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message.type === 'COMPLETE_SESSION') {
     const targetTabId = message.tabId || tabId;
-    if (!targetTabId) { sendResponse({ success: false }); return; }
+    if (!targetTabId) { sendResponse({ success: false }); return true; }
     (async () => {
       const data = await getStorageData();
       const session = data.activeSessions[targetTabId];
       if (session) {
-        const duration = Math.round((Date.now() - session.startTime) / 1000);
+        const duration = message.actualDuration !== undefined
+          ? message.actualDuration
+          : Math.round((Date.now() - session.startTime) / 1000);
         await completeSession(targetTabId, data);
-        // Directly notify the tab's content script to tear down widget + show overlay
         chrome.tabs.sendMessage(targetTabId, {
-          type: 'SESSION_COMPLETED_EXTERNALLY',
-          duration
-        }).catch(() => {}); // tab may be closed or inactive — ignore errors
+          type: 'SESSION_COMPLETED_EXTERNALLY', duration
+        }).catch(() => {});
         sendResponse({ success: true, duration });
       } else {
         sendResponse({ success: false });
