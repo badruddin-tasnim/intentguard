@@ -97,41 +97,60 @@ async function completeSession(tabId, data) {
   await setStorageData(data);
 }
 
-// Monitor tab URLs to finalize sessions if the user navigates away from the social media site
+// Tracks tabs that are mid-redirect to the intercept page, so we don't
+// redirect them again in a loop while they're already on intercept.html
+const redirectingTabs = new Set();
+
+// Single listener that handles BOTH responsibilities:
+// 1. Redirect to intercept.html the FIRST time a monitored domain is visited (no active session yet)
+// 2. End the active session if the user navigates away from the monitored domain
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  // Only act on navigation events
   if (changeInfo.status !== 'loading' && !changeInfo.url) return;
 
-  const data = await getStorageData();
-  const activeSession = data.activeSessions[tabId];
-  if (!activeSession) return; // no active session for this tab — nothing to do
-
-  // Try to get URL from changeInfo first, then tab object, then query directly.
-  // chrome://newtab and other internal pages won't appear in changeInfo.url
-  // but chrome.tabs.get can still return the real url via host_permissions.
   let url = changeInfo.url || (tab && tab.url) || '';
-
   if (!url) {
-    // Fallback: query the tab directly to get current URL
     try {
       const tabInfo = await chrome.tabs.get(tabId);
       url = tabInfo.url || '';
     } catch (e) { url = ''; }
   }
+  if (!url) return;
 
-  // Any non-http URL (chrome://, about:, empty) means user left the web entirely
-  const isInternalPage = !url ||
-    !url.startsWith('http://') && !url.startsWith('https://');
+  // Never act on our own extension pages (prevents redirect loops)
+  if (url.startsWith('chrome-extension://')) {
+    redirectingTabs.delete(tabId);
+    return;
+  }
 
+  const isInternalPage = !url.startsWith('http://') && !url.startsWith('https://');
   const hostname = getHostname(url);
   const socialDomain = isInternalPage ? null : await getSocialDomain(hostname);
 
-  if (!socialDomain || socialDomain !== activeSession.domain) {
-    const duration = Math.round((Date.now() - activeSession.startTime) / 1000);
-    await completeSession(tabId, data);
-    chrome.tabs.sendMessage(tabId, {
-      type: 'SESSION_COMPLETED_EXTERNALLY', duration
-    }).catch(() => {});
+  const data = await getStorageData();
+  const activeSession = data.activeSessions[tabId];
+
+  if (activeSession) {
+    // There IS an active session for this tab — end it if user left the domain
+    if (!socialDomain || socialDomain !== activeSession.domain) {
+      const duration = Math.round((Date.now() - activeSession.startTime) / 1000);
+      await completeSession(tabId, data);
+      chrome.tabs.sendMessage(tabId, {
+        type: 'SESSION_COMPLETED_EXTERNALLY', duration
+      }).catch(() => {});
+    }
+    return;
+  }
+
+  // No active session — if this is a fresh visit to a monitored domain,
+  // redirect to the intercept page instead of letting the site load
+  if (socialDomain && !redirectingTabs.has(tabId)) {
+    redirectingTabs.add(tabId);
+    const interceptUrl = chrome.runtime.getURL('intercept.html') +
+      '?domain=' + encodeURIComponent(socialDomain) +
+      '&dest=' + encodeURIComponent(url);
+    chrome.tabs.update(tabId, { url: interceptUrl }).catch(() => {});
+    // Clear the redirecting flag shortly after — allows re-intercept on next fresh visit
+    setTimeout(() => redirectingTabs.delete(tabId), 3000);
   }
 });
 
@@ -166,7 +185,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (!tabId) { sendResponse({ success: false }); return true; }
     (async () => {
       const data = await getStorageData();
-      const currentDomain = await getSocialDomain(getHostname(sender.tab.url));
+      // On intercept.html, the real site's domain is passed explicitly
+      // since sender.tab.url would just be the intercept page itself
+      const currentDomain = message.domain || await getSocialDomain(getHostname(sender.tab.url));
       data.activeSessions[tabId] = {
         domain: currentDomain || 'social-media',
         intention: message.intention || 'Just browsing',
@@ -174,6 +195,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       };
       await setStorageData(data);
       sendResponse({ success: true, session: data.activeSessions[tabId] });
+
+      // If a destination URL was provided (from intercept.html), navigate there now
+      if (message.dest) {
+        chrome.tabs.update(tabId, { url: message.dest }).catch(() => {});
+      }
     })();
     return true;
   }
@@ -198,6 +224,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
     })();
     return true;
+  }
+
+  if (message.type === 'REQUEST_INTERCEPT_REDIRECT') {
+    // Sent by content.js right after a session completes, while still on
+    // a monitored domain — redirect back through intercept.html for a fresh intention
+    if (tabId && message.domain) {
+      (async () => {
+        try {
+          const tabInfo = await chrome.tabs.get(tabId);
+          const currentUrl = tabInfo.url || '';
+          if (currentUrl.startsWith('chrome-extension://')) return; // already on our page
+          const interceptUrl = chrome.runtime.getURL('intercept.html') +
+            '?domain=' + encodeURIComponent(message.domain) +
+            '&dest=' + encodeURIComponent(currentUrl);
+          redirectingTabs.add(tabId);
+          chrome.tabs.update(tabId, { url: interceptUrl }).catch(() => {});
+          setTimeout(() => redirectingTabs.delete(tabId), 3000);
+        } catch (e) { /* tab may have closed */ }
+      })();
+    }
+    return false; // no response needed
   }
 
   if (message.type === 'GET_DOMAINS') {

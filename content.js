@@ -29,16 +29,6 @@ function getMountTarget() {
   return document.body || document.documentElement;
 }
 
-function lockScrolling() {
-  document.documentElement.style.setProperty('overflow', 'hidden', 'important');
-  if (document.body) document.body.style.setProperty('overflow', 'hidden', 'important');
-}
-
-function restoreScrolling() {
-  document.documentElement.style.removeProperty('overflow');
-  if (document.body) document.body.style.removeProperty('overflow');
-}
-
 // ── SHADOW DOM CONTAINER ──────────────────────────────────
 function createShadowContainer() {
   const target = getMountTarget();
@@ -87,84 +77,6 @@ function injectStyles(root) {
     :host { all: initial; font-size: 16px !important; line-height: 1.5 !important; }
 
     * { box-sizing: border-box; font-family: 'DM Sans', sans-serif; font-size: inherit; line-height: inherit; }
-
-    /* ── OVERLAY ── */
-    .overlay-backdrop {
-      position: fixed !important;
-      top: 0 !important; left: 0 !important;
-      width: 100vw !important; height: 100vh !important;
-      background: rgba(0,0,0,0.97) !important;
-      display: flex; align-items: center; justify-content: center;
-      z-index: 2147483647 !important;
-      pointer-events: all !important;
-      opacity: 0;
-      transition: opacity 250ms ease;
-      overflow: hidden !important;
-      margin: 0 !important; padding: 0 !important;
-    }
-
-    .overlay-backdrop.visible { opacity: 1; }
-
-    .content-block {
-      display: flex; flex-direction: column; align-items: center; text-align: center;
-      opacity: 0; transform: translateY(16px);
-      transition: transform 350ms ease, opacity 350ms ease;
-      transition-delay: 100ms;
-    }
-
-    .overlay-backdrop.visible .content-block { opacity: 1; transform: translateY(0); }
-
-    .label-top {
-      font-size: 11px; letter-spacing: 0.25em; color: #555;
-      text-transform: uppercase; font-weight: 600;
-    }
-
-    .site-line {
-      display: flex; align-items: center; gap: 8px; margin-top: 32px;
-    }
-
-    .site-favicon { width: 20px; height: 20px; border-radius: 50%; background: #222; }
-
-    .site-text { font-size: 28px; font-weight: 300; color: #fff; }
-
-    .main-heading {
-      font-size: 48px; font-weight: 700; color: #fff;
-      line-height: 1.1; margin: 12px 0 0 0;
-    }
-
-    .subtext { font-size: 15px; color: #666; margin: 8px 0 0 0; }
-
-    .intention-input {
-      width: 480px; max-width: 90vw; margin-top: 40px;
-      background: transparent; border: none;
-      border-bottom: 1.5px solid #333;
-      color: #fff; font-size: 20px; font-weight: 400;
-      padding: 12px 0; outline: none; text-align: center;
-      transition: border-bottom-color 0.2s ease;
-    }
-
-    .intention-input::placeholder { color: #444; }
-    .intention-input:focus { border-bottom-color: #fff; }
-
-    .btn-row { display: flex; gap: 12px; margin-top: 40px; }
-
-    .btn-primary {
-      background: #fff; color: #000; font-size: 14px; font-weight: 600;
-      letter-spacing: 0.05em; padding: 14px 36px;
-      border-radius: 6px; border: none; cursor: pointer;
-      transition: background 0.2s ease;
-    }
-    .btn-primary:hover { background: #e0e0e0; }
-
-    .btn-secondary {
-      background: transparent; color: #555; font-size: 14px; font-weight: 500;
-      padding: 14px 24px; border: 1px solid #2a2a2a;
-      border-radius: 6px; cursor: pointer;
-      transition: border-color 0.2s ease, color 0.2s ease;
-    }
-    .btn-secondary:hover { border-color: #555; color: #888; }
-
-    .footer-hint { font-size: 12px; color: #3a3a3a; margin-top: 20px; }
 
     /* ── WIDGET ── */
     .widget-container {
@@ -334,126 +246,23 @@ function injectStyles(root) {
 }
 
 // ── SESSION STATE ─────────────────────────────────────────
+// The overlay is now handled entirely by intercept.html (a separate
+// extension page the user is redirected to before the real site loads).
+// content.js only needs to manage the floating widget once a session exists.
 function checkSessionState() {
   safeSendMessage({ type: 'CHECK_SESSION' }, (response) => {
     if (!response) return;
     const container = createShadowContainer();
 
     if (response.active) {
-      // Remove overlay if present
-      const overlay = container.querySelector('.overlay-backdrop');
-      if (overlay) { overlay.remove(); restoreScrolling(); }
-
-      // Only show widget if not already showing for this session
       const currentWidget = container.querySelector('.widget-container');
       if (currentWidget) return; // widget already present — do not spawn a second one
       activeWidgetSession = response.session;
       showWidget(response.session);
-
     } else {
-      // Remove stale widget
       const currentWidget = container.querySelector('.widget-container');
       if (currentWidget) { currentWidget.remove(); activeWidgetSession = null; }
-
-      // Show overlay if domain is monitored and no overlay already showing
-      const overlay = container.querySelector('.overlay-backdrop');
-      if (!overlay && response.domain) {
-        showOverlay(response.domain);
-      }
     }
-  });
-}
-
-// ── OVERLAY ───────────────────────────────────────────────
-function showOverlay(domain) {
-  const root = createShadowContainer();
-  injectStyles(root);
-
-  lockScrolling();
-  const scrollLockInterval = setInterval(lockScrolling, 250);
-
-  const backdrop = document.createElement('div');
-  backdrop.className = 'overlay-backdrop';
-
-  const cleanName = domain.split('.')[0];
-  const formattedDomain = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
-  const faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
-
-  backdrop.innerHTML = `
-    <div class="content-block">
-      <div class="label-top">INTENTGUARD</div>
-      <div class="site-line">
-        <img class="site-favicon" src="${faviconUrl}" alt="" onerror="this.style.display='none'">
-        <span class="site-text">You're visiting ${formattedDomain}</span>
-      </div>
-      <h1 class="main-heading">What's your intention?</h1>
-      <p class="subtext">State your purpose. Stay focused.</p>
-      <input type="text" class="intention-input" placeholder="e.g., Check messages from mom">
-      <div class="btn-row">
-        <button class="btn-primary" id="btn-submit">Let me in</button>
-        <button class="btn-secondary" id="btn-browse">Just browsing</button>
-      </div>
-      <div class="footer-hint">Press Enter to continue</div>
-    </div>
-  `;
-
-  root.appendChild(backdrop);
-  host.style.pointerEvents = 'all'; // block site clicks while overlay active
-
-  // Force host page not to clip our fixed overlay (Facebook etc.)
-  document.documentElement.style.setProperty('overflow', 'hidden', 'important');
-  if (document.body) document.body.style.setProperty('overflow', 'hidden', 'important');
-
-  setTimeout(() => {
-    backdrop.classList.add('visible');
-    const input = backdrop.querySelector('.intention-input');
-    if (input) input.focus();
-  }, 50);
-
-  // Stop ALL keyboard events bubbling to the host page
-  // (YouTube, Twitter etc. intercept keys globally and swallow them)
-  const intentionInput = backdrop.querySelector('.intention-input');
-  ['keydown', 'keyup', 'keypress'].forEach(evtType => {
-    intentionInput.addEventListener(evtType, (e) => {
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      if (e.key === 'Enter') submitIntent(intentionInput.value);
-    });
-  });
-  intentionInput.addEventListener('click', e => e.stopPropagation());
-  intentionInput.addEventListener('focus', e => e.stopPropagation());
-
-  // Stop overlay click events reaching the page beneath
-  backdrop.addEventListener('click', e => e.stopPropagation());
-  backdrop.addEventListener('mousedown', e => e.stopPropagation());
-
-  // Guard against double-submit (button click + Enter both firing)
-  let submitted = false;
-  const submitIntent = (textValue) => {
-    if (submitted) return;
-    submitted = true;
-    const finalVal = textValue.trim() || 'Just browsing';
-    safeSendMessage({ type: 'START_SESSION', intention: finalVal }, (response) => {
-      if (response && response.success) {
-        clearInterval(scrollLockInterval);
-        host.style.pointerEvents = 'none'; // restore site clicks for widget
-        document.documentElement.style.removeProperty('overflow');
-        if (document.body) document.body.style.removeProperty('overflow');
-
-        backdrop.classList.remove('visible');
-        setTimeout(() => {
-          backdrop.remove();
-          showWidget(response.session);
-        }, 350);
-      }
-    });
-  };
-
-  backdrop.querySelector('#btn-submit').addEventListener('click', () => {
-    submitIntent(intentionInput.value);
-  });
-  backdrop.querySelector('#btn-browse').addEventListener('click', () => {
-    submitIntent('Just browsing');
   });
 }
 
@@ -593,6 +402,10 @@ function showWidget(session) {
   // ── ALERT GLOW ──
   let glowInterval = null;
 
+  function isContextValid() {
+    try { return !!(chrome.runtime && chrome.runtime.id); } catch (e) { return false; }
+  }
+
   function triggerGlow() {
     const card = widgetContainer.querySelector('.widget-card');
     if (card) {
@@ -614,37 +427,37 @@ function showWidget(session) {
   let sharedAudioCtx = null;
 
   function getAudioContext() {
-    if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
-      sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    try {
+      if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
+        sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return sharedAudioCtx;
+    } catch (e) {
+      return null;
     }
-    return sharedAudioCtx;
   }
 
-  function unlockAudioContext() {
-    try {
-      const ctx = getAudioContext();
-      if (ctx.state === 'suspended') {
-        // Play a near-silent buffer to fully unlock the context under the
-        // user-gesture umbrella we currently have (widget was just created
-        // as a direct result of a button click)
-        const buffer = ctx.createBuffer(1, 1, 22050);
-        const source = ctx.createBufferSource();
-        source.buffer = buffer;
-        source.connect(ctx.destination);
-        source.start(0);
-        ctx.resume().catch(() => {});
-      }
-    } catch (e) { /* ignore */ }
-  }
-  unlockAudioContext();
+  // CRITICAL: AudioContext can ONLY be unlocked synchronously inside a real,
+  // direct event handler (not a setTimeout, not a delegated listener that's
+  // already finished its synchronous call stack). The previous approach of
+  // pre-unlocking on a generic click listener was too indirect and Chrome
+  // rejected it. Simplest reliable fix: track whether the page has ever
+  // received a genuine user gesture, and only attempt audio playback after
+  // that flag is set — no pre-unlock dance, no silent buffer trick needed.
+  let pageHasUserGesture = false;
+  const markGestureReceived = () => { pageHasUserGesture = true; };
+  document.addEventListener('pointerdown', markGestureReceived, { capture: true, once: true });
+  document.addEventListener('keydown', markGestureReceived, { capture: true, once: true });
 
   // Plays a short, subtle beep using Web Audio API — no external file needed
   function playAlertBeep() {
+    if (!pageHasUserGesture) return; // no gesture yet — browser will block audio anyway
     chrome.storage.local.get(['soundEnabled', 'glowEnabled'], prefs => {
       if (prefs.soundEnabled === false) return; // default: enabled
       if (prefs.glowEnabled === false) return;  // sound never plays if glow itself is off
       try {
         const ctx = getAudioContext();
+        if (!ctx) return;
 
         const fireBeep = () => {
           const osc = ctx.createOscillator();
@@ -653,25 +466,31 @@ function showWidget(session) {
           osc.type = 'sine';
           osc.frequency.value = 880; // soft, gentle pitch (A5)
 
-          const now = ctx.currentTime;
-          gain.gain.setValueAtTime(0, now);
-          gain.gain.linearRampToValueAtTime(0.06, now + 0.05);
-          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+          // Small fixed offset instead of relying on ctx.currentTime being
+          // perfectly fresh right after a resume() — scheduling slightly in
+          // the future avoids the "start time in the past" silent failure
+          // that can happen right as the context transitions to running.
+          const startAt = ctx.currentTime + 0.02;
+          gain.gain.setValueAtTime(0, startAt);
+          gain.gain.linearRampToValueAtTime(0.12, startAt + 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.4);
 
           osc.connect(gain);
           gain.connect(ctx.destination);
 
-          osc.start(now);
-          osc.stop(now + 0.4);
+          osc.start(startAt);
+          osc.stop(startAt + 0.45);
         };
 
-        // Should already be running thanks to unlockAudioContext() at widget
-        // creation — but resume defensively in case it got suspended again
-        if (ctx.state === 'suspended') {
-          ctx.resume().then(fireBeep).catch(() => fireBeep());
-        } else {
-          fireBeep();
-        }
+        // ALWAYS resume before every beep, regardless of current state.
+        // Chrome auto-suspends AudioContext after periods of silence (which
+        // happens constantly between glow intervals that are minutes apart),
+        // so checking state once is not reliable — resume() is a safe no-op
+        // if already running, and reliably wakes it up if it drifted to
+        // suspended in the background.
+        ctx.resume().then(() => {
+          if (ctx.state === 'running') fireBeep();
+        }).catch(() => { /* this attempt failed — next interval will retry */ });
       } catch (e) { /* audio not available — fail silently */ }
     });
   }
@@ -698,7 +517,11 @@ function showWidget(session) {
   function startGlowInterval() {
     if (glowInterval) clearInterval(glowInterval);
     glowInterval = setInterval(() => {
+      // Extension was reloaded/updated — this tab's content script is now
+      // orphaned. Stop the interval immediately so it never fires again.
+      if (!isContextValid()) { clearInterval(glowInterval); return; }
       chrome.storage.local.get(['glowEnabled', 'glowMinutes'], prefs => {
+        if (chrome.runtime.lastError) return;
         if (prefs.glowEnabled === false) return;
         const intervalMs = (prefs.glowMinutes || 10) * 60 * 1000;
         const elapsed = getElapsedMs();
@@ -774,6 +597,17 @@ function showWidget(session) {
   }
 
   btnComplete.addEventListener('click', () => {
+    if (!isContextValid()) {
+      // Extension was reloaded/updated while this tab was open — the widget
+      // is stale and can no longer talk to the background script. Let the
+      // user know clearly instead of looking unresponsive.
+      btnComplete.textContent = 'Refresh page to continue ↻';
+      btnComplete.style.background = '#444';
+      btnComplete.style.color = '#fff';
+      btnComplete.style.cursor = 'default';
+      btnComplete.onclick = () => window.location.reload();
+      return;
+    }
     const actualElapsedSecs = Math.floor(getElapsedMs() / 1000);
     safeSendMessage({ type: 'COMPLETE_SESSION', actualDuration: actualElapsedSecs }, (response) => {
       teardownWidget();
@@ -784,6 +618,18 @@ function showWidget(session) {
         showCompletionToast(duration);
       }, 300);
     });
+
+    // Safety net: if the context silently failed (no error thrown, but the
+    // callback never fires because the message port is dead), detect it
+    // after a short timeout and show the same refresh prompt.
+    setTimeout(() => {
+      if (!isContextValid() && widgetContainer.isConnected) {
+        btnComplete.textContent = 'Refresh page to continue ↻';
+        btnComplete.style.background = '#444';
+        btnComplete.style.color = '#fff';
+        btnComplete.onclick = () => window.location.reload();
+      }
+    }, 1500);
   });
 }
 
@@ -813,9 +659,24 @@ function showCompletionToast(durationInSeconds) {
       if (root.children.length <= 1 && host) {
         host.remove(); host = null; shadowRoot = null;
       }
-      checkSessionState(); // now safe to show next overlay
+      // Redirect back to the intercept page so the user states a fresh
+      // intention before continuing — same behavior as a brand new visit
+      redirectToInterceptIfStillMonitored();
     }, 400);
   }, 1200);
+}
+
+// After a session ends (Mark Done), check if we're still on a monitored
+// domain. If so, send the user back through the intercept page for a new
+// intention rather than leaving them stranded on the site with no prompt.
+function redirectToInterceptIfStillMonitored() {
+  safeSendMessage({ type: 'CHECK_SESSION' }, (response) => {
+    if (!response) return;
+    if (response.active) return; // a session already exists somehow — leave it alone
+    if (response.domain) {
+      safeSendMessage({ type: 'REQUEST_INTERCEPT_REDIRECT', domain: response.domain });
+    }
+  });
 }
 
 // ── EXTERNAL COMPLETION (from popup) ─────────────────────
