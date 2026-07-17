@@ -8,17 +8,57 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'DM Sans', sans-serif; }
 
-  html, body {
-    width: 100%; height: 100%;
-    background: #000;
-    overflow: hidden;
-  }
+  html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
 
-  body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  body { display: flex; align-items: center; justify-content: center; }
+
+  /* ── TASK LIST CORNER WIDGET ── */
+  .task-corner {
+    position: fixed; top: 24px; left: 24px;
+    max-width: 220px; z-index: 100;
+    opacity: 0; transform: translateX(-10px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
   }
+  .task-corner.visible { opacity: 1; transform: translateX(0); }
+  .task-corner-label {
+    font-size: 10px; font-weight: 700; color: #444;
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;
+  }
+  .task-corner-list { display: flex; flex-direction: column; gap: 6px; }
+  .task-corner-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: #888;
+  }
+    .task-corner-item input[type="checkbox"] { display: none; }
+  .task-corner-check {
+    width: 16px; height: 16px; border-radius: 5px;
+    border: 1.5px solid #333; flex-shrink: 0; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, border-color 0.2s;
+    background: transparent;
+  }
+  .task-corner-item.done .task-corner-check {
+    background: #10b981; border-color: #10b981;
+  }
+  .task-corner-check::after {
+    content: ''; display: none;
+    width: 4px; height: 7px;
+    border: 1.5px solid #000; border-top: none; border-left: none;
+    transform: rotate(45deg) translateY(-1px);
+  }
+  .task-corner-item.done .task-corner-check::after { display: block; }
+  .task-corner-item label {
+    cursor: pointer; line-height: 1.4;
+    transition: color 0.2s, text-decoration 0.2s;
+    font-size: 12px; color: #999;
+  }
+  .task-corner-item.done label { text-decoration: line-through; color: #444; }
+
+  /* ── SCREEN 1: MAIN INTENT ── */
+  .screen { position: absolute; width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.4s ease; }
+  .screen.hidden { opacity: 0; pointer-events: none; }
 
   .content-block {
     display: flex; flex-direction: column; align-items: center; text-align: center;
@@ -26,14 +66,12 @@
     transition: transform 350ms ease, opacity 350ms ease;
     transition-delay: 100ms;
   }
-
   body.visible .content-block { opacity: 1; transform: translateY(0); }
 
   .label-top {
-    font-size: 11px; letter-spacing: 0.25em; color: #555;
+    font-size: 11px; letter-spacing: 0.25em; color: #777;
     text-transform: uppercase; font-weight: 600;
   }
-
   .site-line { display: flex; align-items: center; gap: 8px; margin-top: 32px; }
   .site-favicon { width: 20px; height: 20px; border-radius: 50%; background: #222; }
   .site-text { font-size: 28px; font-weight: 300; color: #fff; }
@@ -42,7 +80,6 @@
     font-size: 48px; font-weight: 700; color: #fff;
     line-height: 1.1; margin: 12px 0 0 0;
   }
-
   .subtext { font-size: 15px; color: #666; margin: 8px 0 0 0; }
 
   .intention-input {
@@ -67,7 +104,7 @@
   .btn-primary:hover { background: #e0e0e0; }
 
   .btn-secondary {
-    background: transparent; color: #555; font-size: 14px; font-weight: 500;
+    background: transparent; color: #888; font-size: 14px; font-weight: 500;
     padding: 14px 24px; border: 1px solid #2a2a2a;
     border-radius: 6px; cursor: pointer;
     transition: border-color 0.2s ease, color 0.2s ease;
@@ -75,24 +112,179 @@
   .btn-secondary:hover { border-color: #555; color: #888; }
 
   .footer-hint { font-size: 12px; color: #3a3a3a; margin-top: 20px; }
+
+  /* QUICK-PICK CHIPS */
+  .chips-label {
+    font-size: 11px; color: #444; margin-top: 36px;
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+  }
+  .chips-row {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    margin-top: 12px; max-width: 540px;
+  }
+  .chip {
+    background: transparent; border: 1px solid #252525;
+    color: #555; font-size: 12px; font-weight: 500;
+    padding: 6px 14px; border-radius: 99px; cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+    white-space: nowrap;
+  }
+  .chip:hover { border-color: #444; color: #aaa; background: #111; }
+  .chip.selected { border-color: #fff; color: #fff; background: #111; }
+
+  /* ── SCREEN 2: JUST BROWSING FRICTION ── */
+  .friction-block {
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    max-width: 520px; padding: 0 20px;
+    opacity: 0; transform: translateY(16px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+  }
+  .friction-block.visible { opacity: 1; transform: translateY(0); }
+
+  /* ANALOG CLOCK */
+  .clock-wrap { position: relative; width: 100px; height: 100px; margin-bottom: 28px; }
+
+  .clock-svg { width: 100px; height: 100px; transform: rotate(-90deg); }
+  .clock-track {
+    fill: none; stroke: #1a1a1a; stroke-width: 4;
+  }
+  .clock-progress {
+    fill: none; stroke: #fff; stroke-width: 4;
+    stroke-linecap: round;
+    stroke-dasharray: 263; /* 2π × 41.86 ≈ 263 */
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1s linear;
+  }
+  .clock-number {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 32px; font-weight: 700; color: #fff; line-height: 1;
+  }
+
+  .friction-heading {
+    font-size: 28px; font-weight: 700; color: #fff; line-height: 1.2;
+    margin-bottom: 10px;
+  }
+  .friction-sub {
+    font-size: 14px; color: #888; line-height: 1.7; margin-bottom: 32px;
+  }
+  .friction-sub strong { color: #888; font-weight: 600; }
+
+  /* TASK INPUT ON FRICTION SCREEN */
+  .task-section { width: 100%; max-width: 400px; margin-bottom: 28px; }
+  .task-section-label {
+    font-size: 11px; font-weight: 700; color: #777;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    text-align: left; margin-bottom: 10px;
+  }
+  .task-input-row { display: flex; gap: 8px; }
+  .task-input {
+    flex: 1; background: transparent; border: none;
+    border-bottom: 1px solid #444;
+    color: #fff; font-size: 13px; padding: 8px 0;
+    outline: none;
+    transition: border-bottom-color 0.2s;
+  }
+  .task-input::placeholder { color: #555; }
+  .task-input:focus { border-bottom-color: #aaa; }
+  .task-add-btn {
+    background: none; border: 1px solid #2a2a2a;
+    color: #555; font-size: 18px; cursor: pointer;
+    width: 32px; height: 32px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.15s, color 0.15s; flex-shrink: 0; align-self: flex-end;
+  }
+  .task-add-btn:hover { border-color: #555; color: #aaa; }
+  .task-added-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+  .task-added-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: #666; text-align: left;
+  }
+  .task-added-item::before {
+    content: '·'; color: #333; font-size: 18px; flex-shrink: 0;
+  }
+
+  .friction-btn-row { display: flex; gap: 10px; }
+  .btn-enter-anyway {
+    background: #fff; color: #000; font-size: 13px; font-weight: 600;
+    padding: 12px 28px; border-radius: 6px; border: none; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-enter-anyway:hover { background: #e0e0e0; }
+  .btn-go-back {
+    background: transparent; color: #888; font-size: 13px;
+    padding: 12px 20px; border: 1px solid #333;
+    border-radius: 6px; cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-go-back:hover { border-color: #777; color: #aaa; }
 </style>
 </head>
 <body>
 
-  <div class="content-block">
-    <div class="label-top">INTENTGUARD</div>
-    <div class="site-line">
-      <img class="site-favicon" id="site-favicon" src="" alt="">
-      <span class="site-text" id="site-text">You're visiting</span>
+  <!-- Task list corner widget -->
+  <div class="task-corner" id="task-corner">
+    <div class="task-corner-label">Today's tasks</div>
+    <div class="task-corner-list" id="task-corner-list"></div>
+  </div>
+
+  <!-- SCREEN 1: Main intention prompt -->
+  <div class="screen" id="screen-main">
+    <div class="content-block">
+      <div class="label-top">INTENTGUARD</div>
+      <div class="site-line">
+        <img class="site-favicon" id="site-favicon" src="" alt="">
+        <span class="site-text" id="site-text">You're visiting</span>
+      </div>
+      <h1 class="main-heading">What's your intention?</h1>
+      <p class="subtext">State your purpose. Stay focused.</p>
+      <input type="text" class="intention-input" id="intention-input" placeholder="e.g., Check messages from mom">
+      <div class="btn-row">
+        <button class="btn-primary" id="btn-submit">Let me in</button>
+        <button class="btn-secondary" id="btn-browse">Just browsing</button>
+      </div>
+      <div class="footer-hint">Press Enter to continue</div>
+      <div class="chips-label">Quick pick</div>
+      <div class="chips-row" id="chips-row"></div>
     </div>
-    <h1 class="main-heading">What's your intention?</h1>
-    <p class="subtext">State your purpose. Stay focused.</p>
-    <input type="text" class="intention-input" id="intention-input" placeholder="e.g., Check messages from mom">
-    <div class="btn-row">
-      <button class="btn-primary" id="btn-submit">Let me in</button>
-      <button class="btn-secondary" id="btn-browse">Just browsing</button>
+  </div>
+
+  <!-- SCREEN 2: Just browsing friction -->
+  <div class="screen hidden" id="screen-friction">
+    <div class="friction-block" id="friction-block">
+
+      <div class="clock-wrap">
+        <svg class="clock-svg" viewBox="0 0 100 100">
+          <circle class="clock-track" cx="50" cy="50" r="41.86"/>
+          <circle class="clock-progress" id="clock-progress" cx="50" cy="50" r="41.86"/>
+        </svg>
+        <div class="clock-number" id="clock-number">10</div>
+      </div>
+
+      <div class="friction-heading">Hold on a sec 👋</div>
+      <div class="friction-sub">
+        You clicked <strong>"Just browsing"</strong> — which usually means<br>
+        opening one tab and losing an hour.<br><br>
+        You've got 10 seconds. Think of something better to do.<br>
+        Or just wait it out. No judgment.
+      </div>
+
+      <div class="task-section">
+        <div class="task-section-label">Got something to do today? Add it here</div>
+        <div class="task-input-row">
+          <input type="text" class="task-input" id="task-input" placeholder="Something you actually need to do today...">
+          <button class="task-add-btn" id="task-add-btn">+</button>
+        </div>
+        <div class="task-added-list" id="task-added-list"></div>
+      </div>
+
+      <div class="friction-btn-row">
+        <button class="btn-enter-anyway" id="btn-enter-anyway" disabled
+          style="opacity:0.3;cursor:not-allowed;">
+          Enter anyway (10)
+        </button>
+        <button class="btn-go-back" id="btn-go-back">← Set an intention instead</button>
+      </div>
     </div>
-    <div class="footer-hint">Press Enter to continue</div>
   </div>
 
   <script src="intercept.js"></script>
