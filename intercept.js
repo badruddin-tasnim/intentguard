@@ -151,7 +151,13 @@ function submitIntent(textValue) {
 }
 
 input.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') submitIntent(input.value);
+  if (e.key !== 'Enter') return;
+  if (!input.value.trim()) {
+    // Empty input — route to just browsing friction screen instead
+    showFrictionScreen();
+  } else {
+    submitIntent(input.value);
+  }
 });
 
 document.getElementById('btn-submit').addEventListener('click', () => {
